@@ -13,15 +13,19 @@ def add_postman(name):
     conn = sqlite3.connect('duty_app.db')
     c = conn.cursor()
     c.execute("INSERT INTO Postmen (name) VALUES (?)", (name,))
+    postman_id = c.lastrowid  # Retrieve the generated postman_id
     conn.commit()
     conn.close()
+    return postman_id  # Return the ID of the newly added postman
 
 def add_route(name):
     conn = sqlite3.connect('duty_app.db')
     c = conn.cursor()
     c.execute("INSERT INTO Routes (name) VALUES (?)", (name,))
+    route_id = c.lastrowid  # Retrieve the generated route_id
     conn.commit()
     conn.close()
+    return route_id  # Return the ID of the newly added route
 
 def get_all_routes():
     conn = sqlite3.connect('duty_app.db')
@@ -90,3 +94,16 @@ def delete_route(route_id):
     c.execute("DELETE FROM Routes WHERE id = ?", (route_id,))
     conn.commit()
     conn.close()
+
+def postman_knows_route(postman_id, route_id):
+    """Check if a postman knows a particular route."""
+    conn = sqlite3.connect('duty_app.db')
+    c = conn.cursor()
+    query = """
+    SELECT 1 FROM Postman_Route
+    WHERE postman_id = ? AND route_id = ?
+    """
+    c.execute(query, (postman_id, route_id))
+    result = c.fetchone()
+    conn.close()
+    return result is not None

@@ -6,7 +6,7 @@ from ui.route_window import open_add_route_window, open_edit_route_window
 from ui.select_postmen_window import open_select_postmen_window
 from ui.duty_list_window import open_duty_list_window  # Import the duty list function
 import db.database as database
-
+from tkinter import messagebox
 
 class DutyApp:
     def __init__(self, root):
@@ -68,12 +68,38 @@ class DutyApp:
         """Store the selected postmen for the week."""
         self.selected_postmen = postmen
 
+    from tkinter import messagebox
+
     def generate_duty_list(self):
-        """Generate the duty list table based on the selected week and postmen."""
+        """Generate the duty list table based on the selected week."""
         week_number = int(self.week_spinbox.get())
+
+        # Calculate the total number of route-day combinations
+        routes = database.get_all_routes()
+        total_routes = len(routes)
+        total_days = 6  # Monday to Saturday
+        total_workload = total_routes * total_days
+
+        # Calculate the total number of postman working days (each postman works 5 days per week)
+        total_postmen = len(self.selected_postmen)
+        total_availability = total_postmen * 5
+
+        # Check if workload exceeds availability
+        if total_workload > total_availability:
+            # Show the warning, but do not stop the process
+            messagebox.showwarning(
+                "Not Enough Postmen",
+                f"Warning: There are {total_routes} routes and {total_days} days, which require "
+                f"{total_workload} route-day assignments.\nHowever, with {total_postmen} postmen working 5 days each, "
+                f"there are only {total_availability} available postman-days.\n\n"
+                "There may not be enough postmen to cover all routes!"
+            )
+
+        # Continue generating the duty list regardless of the warning
         if not self.selected_postmen:
             print("No postmen selected for this week!")
             return
+
         open_duty_list_window(self.root, week_number, self.selected_postmen)
 
 
